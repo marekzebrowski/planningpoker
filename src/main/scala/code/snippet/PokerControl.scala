@@ -17,27 +17,41 @@ object UserName {
 
 class PokerControl extends Logger {
   def saveUser(s:String) = {
-    UserName.userName.set(s)
-    PokerServer ! AddUser(s)
-    
+    if(!s.isEmpty()) {
+    	UserName.userName.set(s)
+    	PokerServer ! AddUser(s)
+    }
+    RedirectTo("vote.html")  
   }
+  
+  def leave = { 
+    PokerServer ! RemoveUser(UserName.userName.get)
+    UserName.userName.remove
+    RedirectTo("vote.html")
+  }
+  
   def user = ".login_user_name" #> UserName.userName.get
   
   def vote(v:String):Unit = {
    info("val rec "+v)
-   val vv = if(v equals("?")) -1 else v.toInt 
+   val vv = v match {
+     case "?" => -1
+     case "∞" => 1000
+     case x => x.toInt
+   }
    PokerServer ! Vote(UserName.userName.get,vv) 
   }
   
   def render = { 
 	  if(UserName.userName.get.isEmpty()) {
 		  ".with-name-only" #> "" &
-		  "name=username" #> SHtml.onSubmit( s => {saveUser(s); RedirectTo("vote.html")} ) 
+		  "name=username" #> SHtml.onSubmit( s => saveUser(s.trim())  ) 
 	  } else {
 	      ".username" #> "" &
 	      "name=show [onclick]" #> SHtml.ajaxInvoke(() =>  (PokerServer ! ShowAll) ) &
-	      "name=new_vote  [onclick]" #> SHtml.ajaxInvoke( () => (PokerServer ! NewVoting )) &
-	      ".actbuttons input [onclick]" #> SHtml.ajaxCall( JsRaw("$(this).val()") , vote )
+	      "name=new_vote [onclick]" #> SHtml.ajaxInvoke( () => (PokerServer ! NewVoting )) &
+	      "name=leave [onclick]" #> SHtml.ajaxInvoke( () => leave ) &
+	      ".actbuttons input [onclick]" #> SHtml.ajaxCall( JsRaw("$(this).val()") , vote ) 
 	  }
   }
 

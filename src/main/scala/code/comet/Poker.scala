@@ -3,43 +3,49 @@ import net.liftweb._
 import http._
 import util._
 import Helpers._
+import net.liftweb.http.js.JE.JsFunc
+import net.liftweb.http.js.JsCmd
+import net.liftweb.http.js.JE.Call
 
 
 
 class Poker  extends CometActor with CometListener {
 	def registerWith = PokerServer
 	
-	var players:Map[String,Option[Int]] = Map()
-	var ready = false 
-	/**
-	 * game state can be ready or not
-	 * any player can be waiting or ready - that is represented by option state
-	 * 
-	 */
-	def calcState() = {
-	  //if there is no None in map game is ready
-	  ready =  ! players.values.exists( _==None)  
-	}
-	
+	var state: Voting = VotingProgress(Map())
+
 	override def lowPriority = {
-		case v: Map[String,Option[Int]] => players = v; calcState(); reRender()
+		case v: Voting => state = v;  reRender()
 	}
 	
 	def isReady(x :Option[Int]):String = x match {
-	  case Some(_) => "+"
-	  case None => "?"
+	  case Some(_) => "✓"
+	  case None => "…"
 	}
-	 
-	/**
-	 * vote state - number - ready and voted, + - read, other waiting, ? - not voted yet
-	 */
-	def vote(x :Option[Int]):String = x match {
-	  case Some(v) => if(ready) v.toString else "+" 
-	  case None => "?"
+
+		
+	def toPresentation(x :Option[Int]):String = x match {
+	  case Some(v:Int) => if(v<0) "?" else if(v>100) "∞" else v.toString
+	  case None => "…"
 	}
+
 	
 	def render = {
-		".uservote *" #> players.map(p => ".name" #> p._1 & ".vote *" #> vote(p._2) ) 
+	  state match {
+	    case pr:VotingProgress => 
+	      ".uservote *" #> pr.votes.map( p => ".name"   #> p._1 & 
+	          							      ".vote *" #> isReady(p._2) )
+	    case vc:VotingComplete => 
+	      val cssTr = 
+	      ".uservotes" #> {
+	    	  ".uservote" #> vc.votes.map( p =>  ".name" #> p._1 & 
+	          								  ".vote *" #> toPresentation(p._2) &
+	          								  ".uservote [class+]" #> vc.isExtreme(p._2) 
+	          								  )
+	      }
+	      val nodes = cssTr(defaultHtml) 
+	      new RenderOut(nodes,Call("animateResults").cmd)
+	  }
 	}
 	
 }
