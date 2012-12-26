@@ -29,19 +29,22 @@ class Poker  extends CometActor with CometListener {
 	  case None => "…"
 	}
 
+	def finalResultPres(v:Int):String = if(v>0) v.toString else "--"
 	
 	def render = {
 	  state match {
 	    case pr:VotingProgress => 
 	      ".uservote *" #> pr.votes.map( p => ".name"   #> p._1 & 
-	          							      ".vote *" #> isReady(p._2) )
+	          							      ".vote *" #> isReady(p._2) ) &
+	      ".finalresults" #> ""          							      
 	    case vc:VotingComplete => 
 	      val cssTr = 
 	      ".uservotes" #> {
 	    	  ".uservote" #> vc.votes.map( p =>  ".name" #> p._1 & 
 	          								  ".vote *" #> toPresentation(p._2) &
 	          								  ".uservote [class+]" #> vc.isExtreme(p._2) 
-	          								  )
+	          								  ) &
+	          ".finalresults h2 *" #> finalResultPres(vc.finalResult)
 	      }
 	      val nodes = cssTr(defaultHtml) 
 	      new RenderOut(nodes,Call("animateResults").cmd)
