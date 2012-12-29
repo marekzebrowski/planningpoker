@@ -50,7 +50,7 @@ object PokerServer extends LiftActor with ListenerManager with Logger {
 	   	 val maxVal = values.max
 	   	 val minI=pokerValues.indexOf(minVal)
 	   	 val maxI=pokerValues.indexOf(maxVal)
-	   	 val finalResult= if (minI>0 && maxI>0 && maxI-minI<=1) maxVal
+	   	 val finalResult= if (minI>=0 && maxI>=0 && maxI-minI<=1) maxVal
 	   	 else -1;
 	   	 VotingComplete(users,minVal,maxVal,finalResult)
    	 } else {

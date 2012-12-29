@@ -3,16 +3,15 @@ package bootstrap.liftweb
 import net.liftweb._
 import util._
 import Helpers._
-
 import common._
 import http._
 import js.jquery.JQueryArtifacts
 import sitemap._
 import Loc._
 import mapper._
-
 import code.model._
 import net.liftmodules.JQueryModule
+import code.rest.UnloadHandler
 
 
 /**
@@ -23,6 +22,7 @@ class Boot {
   def boot {
     // where to search snippet
     LiftRules.addToPackages("code")
+    LiftRules.dispatch.append(UnloadHandler)
 
     //Init the jQuery module, see http://liftweb.net/jquery for more information.
     LiftRules.jsArtifacts = JQueryArtifacts

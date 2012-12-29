@@ -7,8 +7,6 @@ import net.liftweb.http.js.JE.JsFunc
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JE.Call
 
-
-
 class Poker  extends CometActor with CometListener {
 	def registerWith = PokerServer
 	
@@ -43,9 +41,9 @@ class Poker  extends CometActor with CometListener {
 	    	  ".uservote" #> vc.votes.map( p =>  ".name" #> p._1 & 
 	          								  ".vote *" #> toPresentation(p._2) &
 	          								  ".uservote [class+]" #> vc.isExtreme(p._2) 
-	          								  ) &
-	          ".finalresults h2 *" #> finalResultPres(vc.finalResult)
-	      }
+	          								  ) 
+	      } &
+	      ".finalresults" #> finalResultPres(vc.finalResult)
 	      val nodes = cssTr(defaultHtml) 
 	      new RenderOut(nodes,Call("animateResults").cmd)
 	  }

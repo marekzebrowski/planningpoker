@@ -12,18 +12,17 @@
       </div>
       </div>
       <div class="lift:comet?type=Poker">
-      	<div class="row-fluid"><div class="span12">Votes</div></div> 
+      	<div class="row-fluid">
+      		<div class="span2"><h3>Vote <span class="finalresults">x</span></h3></div>
+      	</div> 
         <div class="row-fluid uservotes">
 			<div class="span2 uservote"  style="border: 2px solid black; border-radius: 5px; text-align: center;">
 				<h4> <span class="lead name">John</span></h4>
 				<h2> <span class="lead vote">3</span></h2>
 			</div>
-			<div class="span2 finalresults">
-					<h2>0</h2>
-			</div>			
 		</div>
       </div>
-	  <form class="lift:form.ajax">
+	  <form class="lift:form.ajax?class=form-inline form-inline">
 	  <div class="lift:PokerControl">
 	  <div class="row-fluid actbuttons with-name-only">
 	  <div class="span12">
@@ -49,12 +48,29 @@
 	  	</div>
 	  	
 	  	<div class="row-fluid username">
-	  		  <div class="span12">
-	  		Your name?
-	  		<input type="text" name="username" />
-	  		<input type="submit" value="login" />
+	  		<div class="span12">
+	  		<input type="text" name="username" class="input-small" placeholder="Your name"/>
+	  		<input type="submit" value="login" class="btn"/>
 	  	</div>
 	  	</div>
+	  	<lift:tail>
+	  	<script>
+	  	$(document).ready(function(){
+	  	window.onbeforeunload=function(){
+	  		var x=$("h2 span").html();
+	  		if(x){
+	  			$.ajax({
+	  			url:"v1/onbeforeunload",
+	  			async: false,
+	  	        data: null,
+	  	        success: function(){ return true; },
+	  	        error: function(){ alert('got some error'); }
+	  			})
+	  		} 
+	  	}
+	  	})
+	  	</script>
+	  	</lift:tail>
 	  </div>
 	  </form>
 	  <script type="text/javascript">
@@ -62,7 +78,6 @@
 		  $(".minvote").animate({marginTop:'20px'},300);
 		  $(".maxvote").animate({marginTop:'-20px'},300);
 	  };
-	  
 	  </script>
     </div>
   </body>

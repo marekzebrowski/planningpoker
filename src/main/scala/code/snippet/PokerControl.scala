@@ -11,26 +11,32 @@ import scala.xml.NodeSeq
 import net.liftweb.common.Logger
 
 
-object UserName {
+object UserStore {
   object userName extends SessionVar[String]("");
+  def leave:Unit  = {
+    PokerServer ! RemoveUser(userName.get)
+    userName.remove
+    }
+  def save(name:String):Unit = {
+    
+  }
 }
 
 class PokerControl extends Logger {
   def saveUser(s:String) = {
     if(!s.isEmpty()) {
-    	UserName.userName.set(s)
+    	UserStore.userName.set(s)
     	PokerServer ! AddUser(s)
     }
     RedirectTo("vote.html")  
   }
-  
+
   def leave = { 
-    PokerServer ! RemoveUser(UserName.userName.get)
-    UserName.userName.remove
+	UserStore.leave
     RedirectTo("vote.html")
   }
-  
-  def user = ".login_user_name" #> UserName.userName.get
+
+  def user = ".login_user_name" #> UserStore.userName.get
   
   def vote(v:String):Unit = {
    info("val rec "+v)
@@ -39,11 +45,11 @@ class PokerControl extends Logger {
      case "∞" => 1000
      case x => x.toInt
    }
-   PokerServer ! Vote(UserName.userName.get,vv) 
+   PokerServer ! Vote(UserStore.userName.get,vv) 
   }
   
   def render = { 
-	  if(UserName.userName.get.isEmpty()) {
+	  if(UserStore.userName.get.isEmpty()) {
 		  ".with-name-only" #> "" &
 		  "name=username" #> SHtml.onSubmit( s => saveUser(s.trim())  ) 
 	  } else {
@@ -52,7 +58,7 @@ class PokerControl extends Logger {
 	      "name=new_vote [onclick]" #> SHtml.ajaxInvoke( () => (PokerServer ! NewVoting )) &
 	      "name=leave [onclick]" #> SHtml.ajaxInvoke( () => leave ) &
 	      ".actbuttons input [onclick]" #> SHtml.ajaxCall( JsRaw("$(this).val()") , vote ) 
-	  }
+ 	  }
   }
 
 }
